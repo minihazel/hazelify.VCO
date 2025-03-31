@@ -144,7 +144,7 @@ public class Plugin : BaseUnityPlugin
                     new ConfigurationManagerAttributes { Order = 7 }));
 
             _fovtoggle = Config.Bind(
-                "Field of View",
+                FieldofView,
                 "Enable expanded range",
                 false,
                 new ConfigDescription("Allows increasing the FOV limit to 150",
