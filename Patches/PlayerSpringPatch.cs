@@ -3,9 +3,6 @@ using EFT.Animations;
 using System.Reflection;
 using UnityEngine;
 using HarmonyLib;
-using System;
-using System.IO;
-using System.Collections.Generic;
 using EFT.UI;
 
 namespace hazelify.VCO.Patches
@@ -20,15 +17,18 @@ namespace hazelify.VCO.Patches
         [PatchPostfix]
         private static void PatchPostfix(ref Vector3 ___CameraOffset)
         {
-            if (Plugin._toggleoffset.Value)
+            ConsoleScreen.Log("[VCO] Z: " + ___CameraOffset.z.ToString());
+            ConsoleScreen.Log("[VCO] Y: " + ___CameraOffset.y.ToString());
+            ConsoleScreen.Log("[VCO] X: " + ___CameraOffset.x.ToString());
+            ConsoleScreen.Log("[VCO] PlayerSpringPatch: ");
+
+            if (Plugin._OffsetStates.Value)
             {
                 ___CameraOffset = new Vector3(Plugin._SidewaysOffset.Value, Plugin._UpDownOffset.Value, Plugin._ForwardBackwardOffset.Value);
-                ConsoleScreen.Log("[VCO] Activated PlayerSpring offset");
             }
             else
             {
                 ___CameraOffset = new Vector3(0.04f, 0.04f, 0.04f);
-                ConsoleScreen.Log("[VCO] Deactivated PlayerSpring offset");
             }
         }
     }
