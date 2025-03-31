@@ -75,6 +75,7 @@ public class Plugin : BaseUnityPlugin
 
             weaponsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "weapons.cfg");
             presetsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "presets.json");
+            checkPaths();
 
             PresetManager.Initialize(Plugin.presetsPath);
             if (PresetManager.LoadedPresets.Count == 0)
@@ -296,6 +297,17 @@ public class Plugin : BaseUnityPlugin
     {
         new FixSliderPatch().Enable();
         new ApplySettingsPatch().Enable();
+    }
+
+    private static void checkPaths()
+    {
+        bool doesPresetsPathExist = File.Exists(presetsPath);
+        if (!doesPresetsPathExist)
+        {
+            File.Create(presetsPath);
+            PresetManager.AddPreset("Default", 0.05f, 0.06f, -0.01f);
+        }
+        return;
     }
 
     private static void generateWeaponsList(string path)
