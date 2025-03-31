@@ -16,7 +16,7 @@ namespace hazelify.VCO;
 [BepInDependency("com.samswat.fov", BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BaseUnityPlugin
 {
-    // personal build event path: "..\..\..\BepInEx\plugins\"
+    // personal build event path: "..\..\..\BepInEx\plugins\hazelify.VCO\"
     // general strings
 
     // FOV compat
