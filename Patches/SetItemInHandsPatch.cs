@@ -13,6 +13,7 @@ namespace hazelify.VCO.Patches
 {
     public class SetItemInHandsPatch : ModulePatch
     {
+        public static bool isFinished = false;
         public static ConfigEntry<bool> _OffsetStates;
         public static ConfigEntry<bool> _toggleAutomaticWeaponDetection;
         public static ConfigEntry<float> _ForwardBackwardOffset;
@@ -72,11 +73,22 @@ namespace hazelify.VCO.Patches
                                     string weapon_name = weapon.LocalizedName().ToString();
 
                                     if (!_toggleAutomaticWeaponDetection.Value) return;
-                                    if (Plugin.weaponsList.Contains(weapon_name))
+                                    for (int i = 0; i < Plugin.weaponsList.Count; i++)
                                     {
-                                        Plugin._OffsetStates.Value = true;
+                                        if (weapon_name.Contains(Plugin.weaponsList[i]))
+                                        {
+                                            Plugin._OffsetStates.Value = true;
+                                            isFinished = false;
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            isFinished = true;
+                                            continue;
+                                        }
                                     }
-                                    else
+
+                                    if (isFinished)
                                     {
                                         Plugin._OffsetStates.Value = false;
                                     }
