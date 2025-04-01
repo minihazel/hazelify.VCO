@@ -15,7 +15,7 @@ namespace hazelify.VCO.Patches
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(GClass1053.Class1718), nameof(GClass1053.Class1718.method_0));
+            return AccessTools.Method(typeof(GClass1040.Class1690), nameof(GClass1040.Class1690.method_0));
         }
 
         [PatchPostfix]
