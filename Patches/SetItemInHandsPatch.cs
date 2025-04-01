@@ -44,7 +44,7 @@ namespace hazelify.VCO.Patches
 
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(Player), nameof(Player.method_129));
+            return AccessTools.Method(typeof(Player), nameof(Player.method_82));
         }
 
         [PatchPostfix]
