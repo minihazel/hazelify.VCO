@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /Build/hazelify.VCO/hazelify.VCO.dll
+/Build 3.10/hazelify.VCO/hazelify.VCO.dll
