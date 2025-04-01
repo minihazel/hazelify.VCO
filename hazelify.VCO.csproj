@@ -32,34 +32,34 @@
   
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>References\0Harmony.dll</HintPath>
+      <HintPath>..\..\..\..\SPT 3.10\DEV\PROJECTS\hazelify.VCO\References\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>References\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\..\SPT 3.10\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>References\BepInEx.dll</HintPath>
+      <HintPath>C:\Users\hazelify\Desktop\General\SPT\3.10 Assemblies\BepInEx.dll</HintPath>
     </Reference>
     <Reference Include="Comfort">
-      <HintPath>References\Comfort.dll</HintPath>
+      <HintPath>C:\Users\hazelify\Desktop\General\SPT\3.10 Assemblies\Comfort.dll</HintPath>
     </Reference>
     <Reference Include="ConfigurationManager">
-      <HintPath>References\ConfigurationManager.dll</HintPath>
+      <HintPath>C:\Users\hazelify\Desktop\General\SPT\3.10 Assemblies\ConfigurationManager.dll</HintPath>
     </Reference>
     <Reference Include="netstandard">
       <HintPath>References\netstandard.dll</HintPath>
     </Reference>
     <Reference Include="Sirenix.Serialization">
-      <HintPath>References\Sirenix.Serialization.dll</HintPath>
+      <HintPath>C:\Users\hazelify\Desktop\General\SPT\3.10 Assemblies\Sirenix.Serialization.dll</HintPath>
     </Reference>
     <Reference Include="spt-reflection">
-      <HintPath>References\spt-reflection.dll</HintPath>
+      <HintPath>C:\Users\hazelify\Desktop\General\SPT\3.10 Assemblies\spt-reflection.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>References\UnityEngine.dll</HintPath>
+      <HintPath>C:\Users\hazelify\Desktop\General\SPT\3.10 Assemblies\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>References\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>C:\Users\hazelify\Desktop\General\SPT\3.10 Assemblies\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   

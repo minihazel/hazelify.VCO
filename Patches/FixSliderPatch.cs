@@ -1,13 +1,12 @@
-﻿using EFT.UI;
+﻿using SPT.Reflection.Patching;
 using EFT.UI.Settings;
-using HarmonyLib;
-using SPT.Reflection.Patching;
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using HarmonyLib;
+using EFT.UI;
+using EFT;
 
 namespace hazelify.VCO.Patches
 {
@@ -19,14 +18,14 @@ namespace hazelify.VCO.Patches
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(ref NumberSlider ____fov, GClass1053 ___gclass1053_0)
+        private static void PatchPostfix(ref NumberSlider ____fov, GClass1040 ___gclass1040_0)
         {
             if (Plugin._fovtoggle.Value)
             {
                 Plugin.minRange.Value = 20;
                 Plugin.maxRange.Value = 150;
 
-                SettingsTab.BindNumberSliderToSetting(____fov, ___gclass1053_0.FieldOfView, Plugin.minRange.Value, Plugin.maxRange.Value);
+                SettingsTab.BindNumberSliderToSetting(____fov, ___gclass1040_0.FieldOfView, Plugin.minRange.Value, Plugin.maxRange.Value);
             }
             else
             {
