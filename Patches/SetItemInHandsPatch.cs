@@ -71,8 +71,6 @@ namespace hazelify.VCO.Patches
                                 {
                                     if (item is not Weapon weapon) return;
                                     string weapon_name = weapon.LocalizedName().ToString();
-                                    ConsoleScreen.Log("[VCO] Equipped weapon: " + weapon_name);
-                                    ConsoleScreen.Log("");
 
                                     if (!_toggleAutomaticWeaponDetection.Value) return;
                                     for (int i = 0; i < Plugin.weaponsList.Count; i++)
