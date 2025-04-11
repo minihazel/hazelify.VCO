@@ -38,6 +38,7 @@ public class Plugin : BaseUnityPlugin
     public static ConfigEntry<bool> _DeletePreset;
     public static ConfigEntry<bool> _OffsetStates;
     public static ConfigEntry<bool> _toggleAutomaticWeaponDetection;
+    public static ConfigEntry<bool> _refreshWeaponsList;
 
     private const string Offsets = "Offsets";
     public static ConfigEntry<float> _ForwardBackwardOffset;
@@ -144,6 +145,14 @@ public class Plugin : BaseUnityPlugin
                     null,
                     new ConfigurationManagerAttributes { Order = 7 }));
 
+            _refreshWeaponsList = Config.Bind(
+                Settings,
+                "Refresh weapons list",
+                false,
+                new ConfigDescription("If edited, refresh the `weapons.json` list of recognized weapons in realtime for use with the automatic detection system.",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 7 }));
+
             _fovtoggle = Config.Bind(
                 FieldofView,
                 "Enable expanded range",
@@ -152,7 +161,7 @@ public class Plugin : BaseUnityPlugin
                     null,
                     new ConfigurationManagerAttributes { Order = 6 }));
 
-            _ForwardBackwardOffset = Config.Bind(
+            _SidewaysOffset = Config.Bind(
                 Offsets,
                 "Camera X Offset",
                 0.05f,
@@ -168,7 +177,7 @@ public class Plugin : BaseUnityPlugin
                 new AcceptableValueRange<float>(-0.5f, 0.5f),
                 new ConfigurationManagerAttributes { Order = 19 }));
 
-            _SidewaysOffset = Config.Bind(
+            _ForwardBackwardOffset = Config.Bind(
                 Offsets,
                 "Camera Z Offset",
                 0.05f,
@@ -197,6 +206,7 @@ public class Plugin : BaseUnityPlugin
             OffsetEvents.Initialize(PresetSelection, _ForwardBackwardOffset, _UpDownOffset, _SidewaysOffset, _OffsetStates, _toggleAutomaticWeaponDetection);
             SetItemInHandsPatch.Initialize(_OffsetStates, _toggleAutomaticWeaponDetection, _ForwardBackwardOffset, _UpDownOffset, _SidewaysOffset);
 
+            _refreshWeaponsList.SettingChanged += onRefreshWeaponsList;
             _fovtoggle.SettingChanged += fovSettingChanged;
             _ExportPreset.SettingChanged += PresetSettingsChanged;
             _DeletePreset.SettingChanged += PresetDeleted;
@@ -255,6 +265,14 @@ public class Plugin : BaseUnityPlugin
         }
 
         string defaultValue = Plugin.presetsList.Count > 0 ? Plugin.presetsList[0] : "Default";
+    }
+
+    public static void onRefreshWeaponsList(object sender, EventArgs e)
+    {
+        if (_refreshWeaponsList == null) return;
+        _refreshWeaponsList.Value = false;
+        weaponsList.Clear();
+        readFromWeaponsList();
     }
 
     public static void PresetDeleted(object sender, EventArgs e)
