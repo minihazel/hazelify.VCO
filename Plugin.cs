@@ -9,6 +9,9 @@ using System.Collections.Generic;
 using System.IO;
 using hazelify.VCO.PresetInfo;
 using EFT.UI;
+using System.Linq;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace hazelify.VCO;
 
@@ -39,6 +42,7 @@ public class Plugin : BaseUnityPlugin
     public static ConfigEntry<bool> _OffsetStates;
     public static ConfigEntry<bool> _toggleAutomaticWeaponDetection;
     public static ConfigEntry<bool> _refreshWeaponsList;
+    public static ConfigEntry<bool> _refreshPresetsList;
 
     private const string Offsets = "Offsets";
     public static ConfigEntry<float> _ForwardBackwardOffset;
@@ -77,19 +81,8 @@ public class Plugin : BaseUnityPlugin
             weaponsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "weapons.cfg");
             presetsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "presets.json");
             checkPaths();
+            initPresets();
 
-            PresetManager.Initialize(Plugin.presetsPath);
-            if (PresetManager.LoadedPresets.Count == 0)
-            {
-                Plugin.presetsList.Add("Default"); // fallback if no presets
-            }
-
-            for (int i = 0; i < PresetManager.LoadedPresets.Count; i++)
-            {
-                Plugin.presetsList.Add(PresetManager.LoadedPresets[i].Name);
-            }
-
-            string defaultValue = Plugin.presetsList.Count > 0 ? Plugin.presetsList[0] : "Default";
             OffsetsList = new List<string> { "Disabled", "Override All", "Weapon Detection" };
 
             readFromWeaponsList();
@@ -120,6 +113,7 @@ public class Plugin : BaseUnityPlugin
                 new AcceptableValueList<string>(presetsList.ToArray()),
                 new ConfigurationManagerAttributes { Order = 10 }));
 
+            /*
             _DeletePreset = Config.Bind(
                 Settings,
                 "Delete the current preset",
@@ -128,6 +122,7 @@ public class Plugin : BaseUnityPlugin
                                       "Game restart is required to remove it from the dropdown.",
                     null,
                     new ConfigurationManagerAttributes { Order = 9 }));
+            */
 
             _OffsetStates = Config.Bind(
                 Settings,
@@ -136,7 +131,6 @@ public class Plugin : BaseUnityPlugin
                 new ConfigDescription("Choose if the mod should alter the viewmodel.",
                     null,
                     new ConfigurationManagerAttributes { Order = 8 }));
-
             _toggleAutomaticWeaponDetection = Config.Bind(
                 Settings,
                 "Toggle automatic weapon detection",
@@ -144,12 +138,18 @@ public class Plugin : BaseUnityPlugin
                 new ConfigDescription("Choose if the mod should only do its magic when the equipped weapon is recognized by the mod database.",
                     null,
                     new ConfigurationManagerAttributes { Order = 7 }));
-
             _refreshWeaponsList = Config.Bind(
                 Settings,
                 "Refresh weapons list",
                 false,
                 new ConfigDescription("If edited, refresh the `weapons.json` list of recognized weapons in realtime for use with the automatic detection system.",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 7 }));
+            _refreshPresetsList = Config.Bind(
+                Settings,
+                "Refresh preset list",
+                false,
+                new ConfigDescription("Refresh and fetch new presets from the `presets.json` file.",
                     null,
                     new ConfigurationManagerAttributes { Order = 7 }));
 
@@ -185,6 +185,7 @@ public class Plugin : BaseUnityPlugin
                 new AcceptableValueRange<float>(-0.5f, 0.5f),
                 new ConfigurationManagerAttributes { Order = 18 }));
 
+            /*
             _PresetName = Config.Bind(
                 Export,
                 "Preset Name (for exporting)",
@@ -201,16 +202,31 @@ public class Plugin : BaseUnityPlugin
                                       "Game restart is required to show the new preset in the dropdown.",
                     null,
                     new ConfigurationManagerAttributes { Order = 1 }));
+            */
 
             // init events
             OffsetEvents.Initialize(PresetSelection, _ForwardBackwardOffset, _UpDownOffset, _SidewaysOffset, _OffsetStates, _toggleAutomaticWeaponDetection);
             SetItemInHandsPatch.Initialize(_OffsetStates, _toggleAutomaticWeaponDetection, _ForwardBackwardOffset, _UpDownOffset, _SidewaysOffset);
 
+            _refreshPresetsList.SettingChanged += onRefreshPresetsList;
             _refreshWeaponsList.SettingChanged += onRefreshWeaponsList;
             _fovtoggle.SettingChanged += fovSettingChanged;
             _ExportPreset.SettingChanged += PresetSettingsChanged;
             _DeletePreset.SettingChanged += PresetDeleted;
         }
+    }
+
+    public static string[] initPresets()
+    {
+        PresetManager.Initialize(Plugin.presetsPath);
+        if (PresetManager.LoadedPresets.Count == 0)
+        {
+            Plugin.presetsList.Add("Default"); // fallback if no presets
+        }
+
+        Plugin.presetsList.AddRange(PresetManager.LoadedPresets.Select(p => p.Name));
+        string defaultValue = Plugin.presetsList.Count > 0 ? Plugin.presetsList[0] : "Default";
+        return Plugin.presetsList.ToArray();
     }
 
     public static void OnOptionToggled(object sender, EventArgs e)
@@ -273,6 +289,39 @@ public class Plugin : BaseUnityPlugin
         _refreshWeaponsList.Value = false;
         weaponsList.Clear();
         readFromWeaponsList();
+    }
+
+    public void onRefreshPresetsList(object sender, EventArgs e)
+    {
+        if (_refreshPresetsList == null) return;
+        rebindPresets();
+        _refreshPresetsList.Value = false;
+    }
+
+    public void rebindPresets()
+    {
+        string[] presetOptions = initPresets() ?? new[] { "Default" };
+        string currentValue = PresetSelection.Value ?? presetOptions[0];
+        if (!presetOptions.Contains(currentValue))
+        {
+            currentValue = presetOptions[0];
+        }
+
+        if (PresetSelection != null)
+        {
+            Config.Remove(PresetSelection.Definition);
+        }
+
+        PresetSelection = Config.Bind(
+            "Presets",
+            "Selected Preset",
+            currentValue,
+            new ConfigDescription(
+                "Choose a preset",
+                new AcceptableValueList<string>(presetOptions),
+                new ConfigurationManagerAttributes { IsAdvanced = true }
+            )
+        );
     }
 
     public static void PresetDeleted(object sender, EventArgs e)
