@@ -8,14 +8,16 @@ using BepInEx.Bootstrap;
 using System.Collections.Generic;
 using System.IO;
 using hazelify.VCO.PresetInfo;
+using hazelify.VCO.Patches.StancePatches;
 using EFT.UI;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using UnityEngine;
 
 namespace hazelify.VCO;
 
-[BepInPlugin("hazelify.vco", "Viewmodel Camera Offset", "1.0.1")]
+[BepInPlugin("hazelify.vco", "Viewmodel Camera Offset", "1.0.4")]
 [BepInDependency("com.samswat.fov", BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BaseUnityPlugin
 {
@@ -30,7 +32,6 @@ public class Plugin : BaseUnityPlugin
     public static string presetsPath = null;
     public static List<string> weaponsList = new List<string>();
     public static List<string> presetsList = new List<string>();
-    public static List<string> OffsetsList = new List<string>();
     public static string currentWeapon = null;
 
     public static new ManualLogSource Logger;
@@ -43,6 +44,9 @@ public class Plugin : BaseUnityPlugin
     public static ConfigEntry<bool> _toggleAutomaticWeaponDetection;
     public static ConfigEntry<bool> _refreshWeaponsList;
     public static ConfigEntry<bool> _refreshPresetsList;
+
+    private const string Stances = "Stances";
+    public static ConfigEntry<KeyCode> _CyclingKey;
 
     private const string Offsets = "Offsets";
     public static ConfigEntry<float> _ForwardBackwardOffset;
@@ -77,13 +81,12 @@ public class Plugin : BaseUnityPlugin
             new PlayerSpringPatch().Enable();
             new ApplySettingsPatch().Enable();
             new SetItemInHandsPatch().Enable();
+            new WeaponPositionPatch().Enable();
 
             weaponsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "weapons.cfg");
             presetsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "presets.json");
             checkPaths();
             initPresets();
-
-            OffsetsList = new List<string> { "Disabled", "Override All", "Weapon Detection" };
 
             readFromWeaponsList();
 
@@ -123,6 +126,15 @@ public class Plugin : BaseUnityPlugin
                     null,
                     new ConfigurationManagerAttributes { Order = 9 }));
             */
+
+            _CyclingKey = Config.Bind(
+                Stances,
+                "Stance Cycling Key",
+                KeyCode.H,
+                new ConfigDescription("Choose a key to cycle through the stances.\n\n" +
+                                      "Default is H.",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 5 }));
 
             _OffsetStates = Config.Bind(
                 Settings,
@@ -208,11 +220,14 @@ public class Plugin : BaseUnityPlugin
             OffsetEvents.Initialize(PresetSelection, _ForwardBackwardOffset, _UpDownOffset, _SidewaysOffset, _OffsetStates, _toggleAutomaticWeaponDetection);
             SetItemInHandsPatch.Initialize(_OffsetStates, _toggleAutomaticWeaponDetection, _ForwardBackwardOffset, _UpDownOffset, _SidewaysOffset);
 
+            gameObject.AddComponent<StanceInput>();
+
             _refreshPresetsList.SettingChanged += onRefreshPresetsList;
             _refreshWeaponsList.SettingChanged += onRefreshWeaponsList;
             _fovtoggle.SettingChanged += fovSettingChanged;
             _ExportPreset.SettingChanged += PresetSettingsChanged;
             _DeletePreset.SettingChanged += PresetDeleted;
+
         }
     }
 
