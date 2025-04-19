@@ -78,15 +78,17 @@ namespace hazelify.VCO.Events
                         {
                             if (gameWorld.MainPlayer.ProceduralWeaponAnimation.HandsContainer.CameraOffset != null)
                             {
+                                var __instance = gameWorld.MainPlayer.ProceduralWeaponAnimation;
+
                                 if (_OffsetStates.Value)
                                 {
                                     Vector3 newOffsets = new Vector3(_SidewaysOffset.Value, _UpDownOffset.Value, _ForwardBackwardOffset.Value);
-                                    gameWorld.MainPlayer.ProceduralWeaponAnimation.HandsContainer.CameraOffset = newOffsets;
+                                    __instance.HandsContainer.CameraOffset = newOffsets;
                                 }
                                 else
                                 {
                                     Vector3 newOffsets = new Vector3(0.04f, 0.04f, 0.04f);
-                                    gameWorld.MainPlayer.ProceduralWeaponAnimation.HandsContainer.CameraOffset = newOffsets;
+                                    __instance.HandsContainer.CameraOffset = newOffsets;
                                 }
                             }
                         }
