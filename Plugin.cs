@@ -17,15 +17,15 @@ using UnityEngine;
 namespace hazelify.VCO;
 
 [BepInPlugin("hazelify.vco", "Viewmodel Camera Offset", "1.0.4")]
-[BepInDependency("com.samswat.fov", BepInDependency.DependencyFlags.SoftDependency)]
+// [BepInDependency("com.samswat.fov", BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BaseUnityPlugin
 {
     // personal build event path: "..\..\..\BepInEx\plugins\hazelify.VCO\"
     // general strings
 
-    // FOV compat
-    public static bool isFOVinstalled { get; private set; }
-    public static string FOVmod = "com.samswat.fov";
+    // FOV mod detection outphased for the time being until
+    // I can figure out better compatibility integration
+
     public string currentEnv = Environment.CurrentDirectory; // main SPT dir
     public static string weaponsPath = null;
     public static string presetsPath = null;
@@ -36,6 +36,7 @@ public class Plugin : BaseUnityPlugin
     public static new ManualLogSource Logger;
 
     private const string Settings = "Settings";
+    public static ConfigEntry<bool> _notice;
     // public static ConfigEntry<string> PresetSelection { get; private set; }
     public static ConfigEntry<string> PresetSelection { get; private set; }
     public static ConfigEntry<bool> _DeletePreset;
@@ -59,173 +60,173 @@ public class Plugin : BaseUnityPlugin
     private const string DoNotModify = "(Do not modify)";
     public static ConfigEntry<int> minRange;
     public static ConfigEntry<int> maxRange;
-
-    private const string Detected = "Mod Detection";
     public static ConfigEntry<bool> _placeholder;
 
-    private void Awake()
+    public void Awake()
     {
-        isFOVinstalled = Chainloader.PluginInfos.ContainsKey(FOVmod);
-
         // Awake logic via Unity
         Logger = base.Logger;
         Logger.LogInfo($"hazelify.VCO has loaded!");
 
-        if (!isFOVinstalled)
-        {
-            new FixSliderPatch().Enable();
-            new PlayerSpringPatch().Enable();
-            new ApplySettingsPatch().Enable();
-            new SetItemInHandsPatch().Enable();
+        new FixSliderPatch().Enable();
+        new PlayerSpringPatch().Enable();
+        new ApplySettingsPatch().Enable();
+        new SetItemInHandsPatch().Enable();
 
-            weaponsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "weapons.cfg");
-            presetsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "presets.json");
-            checkPaths();
-            initPresets();
+        weaponsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "weapons.cfg");
+        presetsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "presets.json");
+        checkPaths();
+        initPresets();
 
-            readFromWeaponsList();
+        readFromWeaponsList();
 
-            // Settings.Bind(Config);
-            minRange = Config.Bind(
-                DoNotModify,
-                "Min FOV Value",
-                20,
-                new ConfigDescription("Your desired minimum FOV value. Default is 50",
-                new AcceptableValueRange<int>(1, 149),
-                new ConfigurationManagerAttributes { IsAdvanced = true }));
+        // Settings.Bind(Config);
+        minRange = Config.Bind(
+            DoNotModify,
+            "Min FOV Value",
+            20,
+            new ConfigDescription("Your desired minimum FOV value. Default is 50",
+            new AcceptableValueRange<int>(1, 149),
+            new ConfigurationManagerAttributes { IsAdvanced = true }));
 
-            maxRange = Config.Bind(
-                DoNotModify,
-                "Max FOV Value",
-                150,
-                new ConfigDescription("Your desired maximum FOV value. Default is 75",
-                new AcceptableValueRange<int>(1, 150),
-                new ConfigurationManagerAttributes { IsAdvanced = true }));
+        maxRange = Config.Bind(
+            DoNotModify,
+            "Max FOV Value",
+            150,
+            new ConfigDescription("Your desired maximum FOV value. Default is 75",
+            new AcceptableValueRange<int>(1, 150),
+            new ConfigurationManagerAttributes { IsAdvanced = true }));
 
-            // set up configuration options for the Bep menu
-            PresetSelection = Config.Bind(
-                Settings,
-                "Select Preset",
-                "Default",
-                new ConfigDescription("Choose a preset to use for viewmodel offsets.",
-                new AcceptableValueList<string>(presetsList.ToArray()),
-                new ConfigurationManagerAttributes { Order = 10 }));
+        // set up configuration options for the Bep menu
+        PresetSelection = Config.Bind(
+            Settings,
+            "Select Preset",
+            "Default",
+            new ConfigDescription("Choose a preset to use for viewmodel offsets.",
+            new AcceptableValueList<string>(presetsList.ToArray()),
+            new ConfigurationManagerAttributes { Order = 10 }));
 
-            /*
-            _DeletePreset = Config.Bind(
-                Settings,
-                "Delete the current preset",
-                true,
-                new ConfigDescription("Delete the preset being currently used. This is irreversible!\n\n" +
-                                      "Game restart is required to remove it from the dropdown.",
-                    null,
-                    new ConfigurationManagerAttributes { Order = 9 }));
-            */
+        /*
+        _DeletePreset = Config.Bind(
+            Settings,
+            "Delete the current preset",
+            true,
+            new ConfigDescription("Delete the preset being currently used. This is irreversible!\n\n" +
+                                  "Game restart is required to remove it from the dropdown.",
+                null,
+                new ConfigurationManagerAttributes { Order = 9 }));
+        */
 
-            _OffsetStates = Config.Bind(
-                Settings,
-                "Toggle the offsets on/off",
-                true,
-                new ConfigDescription("Choose if the mod should alter the viewmodel.",
-                    null,
-                    new ConfigurationManagerAttributes { Order = 8 }));
-            _toggleAutomaticWeaponDetection = Config.Bind(
-                Settings,
-                "Toggle automatic weapon detection",
-                true,
-                new ConfigDescription("Choose if the mod should only do its magic when the equipped weapon is recognized by the mod database.",
-                    null,
-                    new ConfigurationManagerAttributes { Order = 7 }));
-            _refreshWeaponsList = Config.Bind(
-                Settings,
-                "Refresh weapons list",
-                false,
-                new ConfigDescription("If edited, refresh the `weapons.json` list of recognized weapons in realtime for use with the automatic detection system.",
-                    null,
-                    new ConfigurationManagerAttributes { Order = 7 }));
-            _refreshPresetsList = Config.Bind(
-                Settings,
-                "Refresh preset list",
-                false,
-                new ConfigDescription("Refresh and fetch new presets from the `presets.json` file.",
-                    null,
-                    new ConfigurationManagerAttributes { Order = 7 }));
+        _notice = Config.Bind(
+            Settings,
+            "Hover cursor here to read",
+            true,
+            new ConfigDescription("If you are using SamSWAT's FOVFix or IncreasedFOV mod, this mod WILL clash. " +
+                                  "I bear no responsibility for any misuse between any of these three mods. Use them at your own caution.",
+                null,
+                new ConfigurationManagerAttributes { Order = 8 }));
+        _OffsetStates = Config.Bind(
+            Settings,
+            "Toggle the offsets on/off",
+            true,
+            new ConfigDescription("Choose if the mod should alter the viewmodel.",
+                null,
+                new ConfigurationManagerAttributes { Order = 8 }));
+        _toggleAutomaticWeaponDetection = Config.Bind(
+            Settings,
+            "Toggle automatic weapon detection",
+            true,
+            new ConfigDescription("Choose if the mod should only do its magic when the equipped weapon is recognized by the mod database.",
+                null,
+                new ConfigurationManagerAttributes { Order = 7 }));
+        _refreshWeaponsList = Config.Bind(
+            Settings,
+            "Refresh weapons list",
+            false,
+            new ConfigDescription("If edited, refresh the `weapons.json` list of recognized weapons in realtime for use with the automatic detection system.",
+                null,
+                new ConfigurationManagerAttributes { Order = 7 }));
+        _refreshPresetsList = Config.Bind(
+            Settings,
+            "Refresh preset list",
+            false,
+            new ConfigDescription("Refresh and fetch new presets from the `presets.json` file.",
+                null,
+                new ConfigurationManagerAttributes { Order = 7 }));
 
-            _fovtoggle = Config.Bind(
-                FieldofView,
-                "Enable expanded range",
-                false,
-                new ConfigDescription("Allows increasing the FOV limit to 150",
-                    null,
-                    new ConfigurationManagerAttributes { Order = 6 }));
+        _fovtoggle = Config.Bind(
+            FieldofView,
+            "Enable expanded range",
+            false,
+            new ConfigDescription("Allows increasing the FOV limit to 150",
+                null,
+                new ConfigurationManagerAttributes { Order = 6 }));
 
-            _SidewaysOffset = Config.Bind(
-                Offsets,
-                "Camera X Offset",
-                0.05f,
-                new ConfigDescription("Lower value = Camera goes further left. Higher value = Camera goes further right. Default is 0.05",
-                new AcceptableValueRange<float>(-0.5f, 0.5f),
-                new ConfigurationManagerAttributes { Order = 20 }));
+        _SidewaysOffset = Config.Bind(
+            Offsets,
+            "Camera X Offset",
+            0.05f,
+            new ConfigDescription("Lower value = Camera goes further left. Higher value = Camera goes further right. Default is 0.05",
+            new AcceptableValueRange<float>(-0.5f, 0.5f),
+            new ConfigurationManagerAttributes { Order = 20 }));
 
-            _UpDownOffset = Config.Bind(
-                Offsets,
-                "Camera Y Offset",
-                0.05f,
-                new ConfigDescription("Lower value = Camera goes further down. Higher value = Camera goes further up Default is 0.05",
-                new AcceptableValueRange<float>(-0.5f, 0.5f),
-                new ConfigurationManagerAttributes { Order = 19 }));
+        _UpDownOffset = Config.Bind(
+            Offsets,
+            "Camera Y Offset",
+            0.05f,
+            new ConfigDescription("Lower value = Camera goes further down. Higher value = Camera goes further up Default is 0.05",
+            new AcceptableValueRange<float>(-0.5f, 0.5f),
+            new ConfigurationManagerAttributes { Order = 19 }));
 
-            _ForwardBackwardOffset = Config.Bind(
-                Offsets,
-                "Camera Z Offset",
-                0.05f,
-                new ConfigDescription("Lower value = Camera goes further back. Higher value = Camera goes further front. Default is 0.05",
-                new AcceptableValueRange<float>(-0.5f, 0.5f),
-                new ConfigurationManagerAttributes { Order = 18 }));
+        _ForwardBackwardOffset = Config.Bind(
+            Offsets,
+            "Camera Z Offset",
+            0.05f,
+            new ConfigDescription("Lower value = Camera goes further back. Higher value = Camera goes further front. Default is 0.05",
+            new AcceptableValueRange<float>(-0.5f, 0.5f),
+            new ConfigurationManagerAttributes { Order = 18 }));
 
-            /*
-            _PresetName = Config.Bind(
-                Export,
-                "Preset Name (for exporting)",
-                "My Custom Preset",
-                new ConfigDescription("Enter the name of your custom preset before you export it.",
-                    null,
-                    new ConfigurationManagerAttributes { Order = 2 }));
+        /*
+        _PresetName = Config.Bind(
+            Export,
+            "Preset Name (for exporting)",
+            "My Custom Preset",
+            new ConfigDescription("Enter the name of your custom preset before you export it.",
+                null,
+                new ConfigurationManagerAttributes { Order = 2 }));
 
-            _ExportPreset = Config.Bind(
-                Export,
-                "Export Preset",
-                false,
-                new ConfigDescription("Click the toggle to export your preset. It's a toggle instead of a button because Devraccoon is too lazy to make it a button.\n\n" +
-                                      "Game restart is required to show the new preset in the dropdown.",
-                    null,
-                    new ConfigurationManagerAttributes { Order = 1 }));
-            */
+        _ExportPreset = Config.Bind(
+            Export,
+            "Export Preset",
+            false,
+            new ConfigDescription("Click the toggle to export your preset. It's a toggle instead of a button because Devraccoon is too lazy to make it a button.\n\n" +
+                                  "Game restart is required to show the new preset in the dropdown.",
+                null,
+                new ConfigurationManagerAttributes { Order = 1 }));
+        */
 
-            // init events
-            OffsetEvents.Initialize(PresetSelection, _ForwardBackwardOffset, _UpDownOffset, _SidewaysOffset, _OffsetStates, _toggleAutomaticWeaponDetection);
-            SetItemInHandsPatch.Initialize(_OffsetStates, _toggleAutomaticWeaponDetection, _ForwardBackwardOffset, _UpDownOffset, _SidewaysOffset);
+        // init events
+        OffsetEvents.Initialize(PresetSelection, _ForwardBackwardOffset, _UpDownOffset, _SidewaysOffset, _OffsetStates, _toggleAutomaticWeaponDetection);
+        SetItemInHandsPatch.Initialize(_OffsetStates, _toggleAutomaticWeaponDetection, _ForwardBackwardOffset, _UpDownOffset, _SidewaysOffset);
 
-            _refreshPresetsList.SettingChanged += onRefreshPresetsList;
-            _refreshWeaponsList.SettingChanged += onRefreshWeaponsList;
-            _fovtoggle.SettingChanged += fovSettingChanged;
-            _ExportPreset.SettingChanged += PresetSettingsChanged;
-            _DeletePreset.SettingChanged += PresetDeleted;
-
-        }
+        _refreshPresetsList.SettingChanged += onRefreshPresetsList;
+        _refreshWeaponsList.SettingChanged += onRefreshWeaponsList;
+        _fovtoggle.SettingChanged += fovSettingChanged;
+        _ExportPreset.SettingChanged += PresetSettingsChanged;
+        _DeletePreset.SettingChanged += PresetDeleted;
     }
 
     public static string[] initPresets()
     {
-        PresetManager.Initialize(Plugin.presetsPath);
+        PresetManager.Initialize(presetsPath);
         if (PresetManager.LoadedPresets.Count == 0)
         {
-            Plugin.presetsList.Add("Default"); // fallback if no presets
+            presetsList.Add("Default"); // fallback if no presets
         }
 
-        Plugin.presetsList.AddRange(PresetManager.LoadedPresets.Select(p => p.Name));
-        string defaultValue = Plugin.presetsList.Count > 0 ? Plugin.presetsList[0] : "Default";
-        return Plugin.presetsList.ToArray();
+        presetsList.AddRange(PresetManager.LoadedPresets.Select(p => p.Name));
+        string defaultValue = presetsList.Count > 0 ? presetsList[0] : "Default";
+        return presetsList.ToArray();
     }
 
     public static void OnOptionToggled(object sender, EventArgs e)
