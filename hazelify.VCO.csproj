@@ -32,16 +32,19 @@
   
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>References\0Harmony.dll</HintPath>
+      <HintPath>D:\SPT Iterations\Assemblies 4.0\Core\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>D:\SPT Iterations\Assemblies 4.0\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>References\BepInEx.dll</HintPath>
+      <HintPath>D:\SPT Iterations\Assemblies 4.0\Core\BepInEx.dll</HintPath>
     </Reference>
     <Reference Include="Comfort">
-      <HintPath>References\Comfort.dll</HintPath>
+      <HintPath>D:\SPT Iterations\Assemblies 4.0\Comfort.dll</HintPath>
+    </Reference>
+    <Reference Include="Comfort.Unity">
+      <HintPath>D:\SPT Iterations\Assemblies 4.0\Comfort.Unity.dll</HintPath>
     </Reference>
     <Reference Include="ConfigurationManager">
       <HintPath>References\ConfigurationManager.dll</HintPath>
@@ -50,23 +53,19 @@
       <HintPath>References\netstandard.dll</HintPath>
     </Reference>
     <Reference Include="Sirenix.Serialization">
-      <HintPath>References\Sirenix.Serialization.dll</HintPath>
+      <HintPath>D:\SPT Iterations\Assemblies 4.0\Sirenix.Serialization.dll</HintPath>
     </Reference>
     <Reference Include="spt-reflection">
-      <HintPath>References\spt-reflection.dll</HintPath>
+      <HintPath>D:\SPT Iterations\Assemblies 4.0\Core\spt-reflection.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>References\UnityEngine.dll</HintPath>
+      <HintPath>D:\SPT Iterations\Assemblies 4.0\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>References\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>D:\SPT Iterations\Assemblies 4.0\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>C:\Users\hazelify\Desktop\General\SPT\3.11 Assemblies\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath>D:\SPT Iterations\Assemblies 4.0\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
   </ItemGroup>
-  
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if exist &quot;$(ProjectDir)Build\hazelify.VCO\hazelify.VCO.dll&quot; del /F /Q &quot;$(ProjectDir)Build\hazelify.VCO\hazelify.VCO.dll&quot;&#xD;&#xA;xcopy /Y /D &quot;$(TargetPath)&quot; &quot;..\..\..\BepInEx\plugins\hazelify.VCO\&quot;" />
-  </Target>
 </Project>

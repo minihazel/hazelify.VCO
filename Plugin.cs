@@ -97,70 +97,13 @@ public class Plugin : BaseUnityPlugin
             new AcceptableValueRange<int>(1, 150),
             new ConfigurationManagerAttributes { IsAdvanced = true }));
 
-        // set up configuration options for the Bep menu
-        PresetSelection = Config.Bind(
-            Settings,
-            "Select Preset",
-            "Default",
-            new ConfigDescription("Choose a preset to use for viewmodel offsets.",
-            new AcceptableValueList<string>(presetsList.ToArray()),
-            new ConfigurationManagerAttributes { Order = 10 }));
-
-        /*
-        _DeletePreset = Config.Bind(
-            Settings,
-            "Delete the current preset",
-            true,
-            new ConfigDescription("Delete the preset being currently used. This is irreversible!\n\n" +
-                                  "Game restart is required to remove it from the dropdown.",
-                null,
-                new ConfigurationManagerAttributes { Order = 9 }));
-        */
-
-        _notice = Config.Bind(
-            Settings,
-            "Hover cursor here to read",
-            true,
-            new ConfigDescription("If you are using SamSWAT's FOVFix or IncreasedFOV mod, this mod WILL clash. " +
-                                  "I bear no responsibility for any misuse between any of these three mods. Use them at your own caution.",
-                null,
-                new ConfigurationManagerAttributes { Order = 8 }));
-        _OffsetStates = Config.Bind(
-            Settings,
-            "Toggle the offsets on/off",
-            true,
-            new ConfigDescription("Choose if the mod should alter the viewmodel.",
-                null,
-                new ConfigurationManagerAttributes { Order = 8 }));
-        _toggleAutomaticWeaponDetection = Config.Bind(
-            Settings,
-            "Toggle automatic weapon detection",
-            true,
-            new ConfigDescription("Choose if the mod should only do its magic when the equipped weapon is recognized by the mod database.",
-                null,
-                new ConfigurationManagerAttributes { Order = 7 }));
-        _refreshWeaponsList = Config.Bind(
-            Settings,
-            "Refresh weapons list",
-            false,
-            new ConfigDescription("If edited, refresh the `weapons.json` list of recognized weapons in realtime for use with the automatic detection system.",
-                null,
-                new ConfigurationManagerAttributes { Order = 7 }));
-        _refreshPresetsList = Config.Bind(
-            Settings,
-            "Refresh preset list",
-            false,
-            new ConfigDescription("Refresh and fetch new presets from the `presets.json` file.",
-                null,
-                new ConfigurationManagerAttributes { Order = 7 }));
-
         _fovtoggle = Config.Bind(
             FieldofView,
             "Enable expanded range",
             false,
             new ConfigDescription("Allows increasing the FOV limit to 150",
                 null,
-                new ConfigurationManagerAttributes { Order = 6 }));
+                new ConfigurationManagerAttributes { Order = 10 }));
 
         _SidewaysOffset = Config.Bind(
             Offsets,
@@ -168,7 +111,7 @@ public class Plugin : BaseUnityPlugin
             0.05f,
             new ConfigDescription("Lower value = Camera goes further left. Higher value = Camera goes further right. Default is 0.05",
             new AcceptableValueRange<float>(-0.5f, 0.5f),
-            new ConfigurationManagerAttributes { Order = 20 }));
+            new ConfigurationManagerAttributes { Order = 9 }));
 
         _UpDownOffset = Config.Bind(
             Offsets,
@@ -176,7 +119,7 @@ public class Plugin : BaseUnityPlugin
             0.05f,
             new ConfigDescription("Lower value = Camera goes further down. Higher value = Camera goes further up Default is 0.05",
             new AcceptableValueRange<float>(-0.5f, 0.5f),
-            new ConfigurationManagerAttributes { Order = 19 }));
+            new ConfigurationManagerAttributes { Order = 8 }));
 
         _ForwardBackwardOffset = Config.Bind(
             Offsets,
@@ -184,7 +127,54 @@ public class Plugin : BaseUnityPlugin
             0.05f,
             new ConfigDescription("Lower value = Camera goes further back. Higher value = Camera goes further front. Default is 0.05",
             new AcceptableValueRange<float>(-0.5f, 0.5f),
-            new ConfigurationManagerAttributes { Order = 18 }));
+            new ConfigurationManagerAttributes { Order = 7 }));
+
+
+
+        // set up configuration options for the Bep menu
+        PresetSelection = Config.Bind(
+            Settings,
+            "Select Preset",
+            "Default",
+            new ConfigDescription("Choose a preset to use for viewmodel offsets.",
+            new AcceptableValueList<string>(presetsList.ToArray()),
+            new ConfigurationManagerAttributes { Order = 6 }));
+        _notice = Config.Bind(
+            Settings,
+            "Hover cursor here to read",
+            true,
+            new ConfigDescription("If you are using SamSWAT's FOVFix or IncreasedFOV mod, this mod WILL clash. " +
+                                  "I bear no responsibility for any misuse between any of these three mods. Use them at your own caution.",
+                null,
+                new ConfigurationManagerAttributes { Order = 5 }));
+        _OffsetStates = Config.Bind(
+            Settings,
+            "Toggle the offsets on/off",
+            true,
+            new ConfigDescription("Choose if the mod should alter the viewmodel.",
+                null,
+                new ConfigurationManagerAttributes { Order = 4 }));
+        _refreshPresetsList = Config.Bind(
+            Settings,
+            "Refresh preset list",
+            false,
+            new ConfigDescription("Refresh and fetch new presets from the `presets.json` file.",
+                null,
+                new ConfigurationManagerAttributes { Order = 3 }));
+        _refreshWeaponsList = Config.Bind(
+            Settings,
+            "Refresh weapons list",
+            false,
+            new ConfigDescription("If edited, refresh the `weapons.json` list of recognized weapons in realtime for use with the automatic detection system.",
+                null,
+                new ConfigurationManagerAttributes { Order = 2 }));
+        _toggleAutomaticWeaponDetection = Config.Bind(
+            Settings,
+            "Toggle automatic weapon detection",
+            true,
+            new ConfigDescription("Choose if the mod should only do its magic when the equipped weapon is recognized by the mod database.",
+                null,
+                new ConfigurationManagerAttributes { Order = 1 }));
 
         /*
         _PresetName = Config.Bind(

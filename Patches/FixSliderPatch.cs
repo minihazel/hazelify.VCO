@@ -19,14 +19,14 @@ namespace hazelify.VCO.Patches
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(ref NumberSlider ____fov, GClass1053 ___gclass1053_0)
+        private static void PatchPostfix(ref NumberSlider ____fov, GClass1085 ___gclass1085_0)
         {
             if (Plugin._fovtoggle.Value)
             {
                 Plugin.minRange.Value = 20;
                 Plugin.maxRange.Value = 150;
 
-                SettingsTab.BindNumberSliderToSetting(____fov, ___gclass1053_0.FieldOfView, Plugin.minRange.Value, Plugin.maxRange.Value);
+                SettingsTab.BindNumberSliderToSetting(____fov, ___gclass1085_0.FieldOfView, Plugin.minRange.Value, Plugin.maxRange.Value);
             }
             else
             {
