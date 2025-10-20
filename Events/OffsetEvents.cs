@@ -90,6 +90,13 @@ namespace hazelify.VCO.Events
                                     Vector3 newOffsets = new Vector3(0.04f, 0.04f, 0.04f);
                                     __instance.HandsContainer.CameraOffset = newOffsets;
                                 }
+
+                                if (!Plugin.isEnablingViaUpdate)
+                                {
+                                    Plugin.currentOffset.Clear();
+                                    Plugin.currentOffset.Add("X", _SidewaysOffset.Value);
+                                    Plugin.currentOffset.Add("Y", _UpDownOffset.Value);
+                                }
                             }
                         }
                     }

@@ -32,7 +32,10 @@ public class Plugin : BaseUnityPlugin
     public static List<string> weaponsList = new List<string>();
     public static List<string> presetsList = new List<string>();
     public static string currentWeapon = null;
-
+    public static bool isInActiveAim = false;
+    public static bool hasStartedGame = false;
+    public static bool isEnablingViaUpdate = false;
+    public static Dictionary<string, float> currentOffset = new Dictionary<string, float>();
     public static new ManualLogSource Logger;
 
     private const string Settings = "Settings";
@@ -49,6 +52,9 @@ public class Plugin : BaseUnityPlugin
     public static ConfigEntry<float> _ForwardBackwardOffset;
     public static ConfigEntry<float> _UpDownOffset;
     public static ConfigEntry<float> _SidewaysOffset;
+
+    public static ConfigEntry<bool> _EnableActiveAim;
+    public static ConfigEntry<KeyboardShortcut> _ActiveAimShortcut;
 
     private const string Export = "Export";
     public static ConfigEntry<string> _PresetName;
@@ -129,6 +135,22 @@ public class Plugin : BaseUnityPlugin
             new AcceptableValueRange<float>(-0.5f, 0.5f),
             new ConfigurationManagerAttributes { Order = 7 }));
 
+        _EnableActiveAim = Config.Bind(
+            Offsets,
+            "Enable Active Aim",
+            false,
+            new ConfigDescription("Allows for using (discount) Active Aim via hotkey.",
+            null,
+            new ConfigurationManagerAttributes { Order = 6 }));
+
+        _ActiveAimShortcut = Config.Bind(
+            Offsets,
+            "Active Aim Hotkey",
+            new KeyboardShortcut(KeyCode.Z),
+            new ConfigDescription("Set what hotkey to toggle Active Aim with",
+            null,
+            new ConfigurationManagerAttributes { Order = 5 }));
+
 
 
         // set up configuration options for the Bep menu
@@ -202,8 +224,39 @@ public class Plugin : BaseUnityPlugin
         _refreshPresetsList.SettingChanged += onRefreshPresetsList;
         _refreshWeaponsList.SettingChanged += onRefreshWeaponsList;
         _fovtoggle.SettingChanged += fovSettingChanged;
-        _ExportPreset.SettingChanged += PresetSettingsChanged;
-        _DeletePreset.SettingChanged += PresetDeleted;
+        // _ExportPreset.SettingChanged += PresetSettingsChanged;
+        // _DeletePreset.SettingChanged += PresetDeleted;
+
+        if (currentOffset == null) return;
+        if (_SidewaysOffset == null) return;
+        if (_SidewaysOffset == null) return;
+
+        currentOffset.Add("X", _SidewaysOffset.Value);
+        currentOffset.Add("Y", _UpDownOffset.Value);
+    }
+
+    public void Update()
+    {
+        if (hasStartedGame)
+        {
+            if (IsKeyPressed(_ActiveAimShortcut.Value) && _EnableActiveAim.Value)
+            {
+                if (!isInActiveAim)
+                {
+                    isEnablingViaUpdate = true;
+                    isInActiveAim = true;
+                    _SidewaysOffset.Value = 0.123f;
+                    _UpDownOffset.Value = 0.043f;
+                }
+                else
+                {
+                    isEnablingViaUpdate = true;
+                    isInActiveAim = false;
+                    _SidewaysOffset.Value = currentOffset["X"];
+                    _UpDownOffset.Value = currentOffset["Y"];
+                }
+            }
+        }
     }
 
     public static string[] initPresets()
@@ -410,5 +463,23 @@ public class Plugin : BaseUnityPlugin
                 weaponsList.AddRange(File.ReadAllLines(weaponsPath));
             }
         }
+    }
+
+    bool IsKeyPressed(KeyboardShortcut key)
+    {
+        if (!Input.GetKeyDown(key.MainKey))
+        {
+            return false;
+        }
+
+        foreach (var modifier in key.Modifiers)
+        {
+            if (!Input.GetKey(modifier))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
