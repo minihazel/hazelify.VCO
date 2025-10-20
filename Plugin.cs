@@ -16,7 +16,7 @@ using UnityEngine;
 
 namespace hazelify.VCO;
 
-[BepInPlugin("hazelify.vco", "Viewmodel Camera Offset", "1.0.5")]
+[BepInPlugin("hazelify.vco", "Viewmodel Camera Offset", "1.1.0")]
 // [BepInDependency("com.samswat.fov", BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BaseUnityPlugin
 {
