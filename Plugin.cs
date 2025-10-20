@@ -16,7 +16,7 @@ using UnityEngine;
 
 namespace hazelify.VCO;
 
-[BepInPlugin("hazelify.vco", "Viewmodel Camera Offset", "1.0.6")]
+[BepInPlugin("hazelify.vco", "Viewmodel Camera Offset", "1.1.0")]
 // [BepInDependency("com.samswat.fov", BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BaseUnityPlugin
 {
@@ -35,9 +35,7 @@ public class Plugin : BaseUnityPlugin
     public static bool isInActiveAim = false;
     public static bool hasStartedGame = false;
     public static bool isEnablingViaUpdate = false;
-
     public static Dictionary<string, float> currentOffset = new Dictionary<string, float>();
-
     public static new ManualLogSource Logger;
 
     private const string Settings = "Settings";
@@ -80,14 +78,12 @@ public class Plugin : BaseUnityPlugin
         new PlayerSpringPatch().Enable();
         new ApplySettingsPatch().Enable();
         new SetItemInHandsPatch().Enable();
-        new OnGameStarted().Enable();
-        new OnGameDestroyedPatch().Enable();
 
         weaponsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "weapons.cfg");
         presetsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "presets.json");
-
         checkPaths();
         initPresets();
+
         readFromWeaponsList();
 
         // Settings.Bind(Config);
