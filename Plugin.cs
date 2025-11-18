@@ -13,6 +13,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using UnityEngine;
+using EFT.Interactive;
 
 namespace hazelify.VCO;
 
@@ -21,10 +22,6 @@ namespace hazelify.VCO;
 public class Plugin : BaseUnityPlugin
 {
     // personal build event path: "..\..\..\BepInEx\plugins\hazelify.VCO\"
-    // general strings
-
-    // FOV mod detection outphased for the time being until
-    // I can figure out better compatibility integration
 
     public string currentEnv = Environment.CurrentDirectory; // main SPT dir
     public static string weaponsPath = null;
@@ -32,15 +29,15 @@ public class Plugin : BaseUnityPlugin
     public static List<string> weaponsList = new List<string>();
     public static List<string> presetsList = new List<string>();
     public static string currentWeapon = null;
+    public static string loadedPreset = null;
+    public static bool isEnablingViaUpdate = false;
     public static bool isInActiveAim = false;
     public static bool hasStartedGame = false;
-    public static bool isEnablingViaUpdate = false;
     public static Dictionary<string, float> currentOffset = new Dictionary<string, float>();
     public static new ManualLogSource Logger;
 
     private const string Settings = "Settings";
     public static ConfigEntry<bool> _notice;
-    // public static ConfigEntry<string> PresetSelection { get; private set; }
     public static ConfigEntry<string> PresetSelection { get; private set; }
     public static ConfigEntry<bool> _DeletePreset;
     public static ConfigEntry<bool> _OffsetStates;
@@ -198,24 +195,7 @@ public class Plugin : BaseUnityPlugin
                 null,
                 new ConfigurationManagerAttributes { Order = 1 }));
 
-        /*
-        _PresetName = Config.Bind(
-            Export,
-            "Preset Name (for exporting)",
-            "My Custom Preset",
-            new ConfigDescription("Enter the name of your custom preset before you export it.",
-                null,
-                new ConfigurationManagerAttributes { Order = 2 }));
 
-        _ExportPreset = Config.Bind(
-            Export,
-            "Export Preset",
-            false,
-            new ConfigDescription("Click the toggle to export your preset. It's a toggle instead of a button because Devraccoon is too lazy to make it a button.\n\n" +
-                                  "Game restart is required to show the new preset in the dropdown.",
-                null,
-                new ConfigurationManagerAttributes { Order = 1 }));
-        */
 
         // init events
         OffsetEvents.Initialize(PresetSelection, _ForwardBackwardOffset, _UpDownOffset, _SidewaysOffset, _OffsetStates, _toggleAutomaticWeaponDetection);
@@ -224,37 +204,28 @@ public class Plugin : BaseUnityPlugin
         _refreshPresetsList.SettingChanged += onRefreshPresetsList;
         _refreshWeaponsList.SettingChanged += onRefreshWeaponsList;
         _fovtoggle.SettingChanged += fovSettingChanged;
-        // _ExportPreset.SettingChanged += PresetSettingsChanged;
-        // _DeletePreset.SettingChanged += PresetDeleted;
 
-        if (currentOffset == null) return;
-        if (_SidewaysOffset == null) return;
-        if (_SidewaysOffset == null) return;
-
-        currentOffset.Add("X", _SidewaysOffset.Value);
-        currentOffset.Add("Y", _UpDownOffset.Value);
+        currentOffset["Y"] = _UpDownOffset.Value;
+        currentOffset["Z"] = _SidewaysOffset.Value;
     }
 
     public void Update()
     {
-        if (hasStartedGame)
+        if (_EnableActiveAim.Value && IsKeyPressed(_ActiveAimShortcut.Value))
         {
-            if (IsKeyPressed(_ActiveAimShortcut.Value) && _EnableActiveAim.Value)
+            if (!isInActiveAim)
             {
-                if (!isInActiveAim)
-                {
-                    isEnablingViaUpdate = true;
-                    isInActiveAim = true;
-                    _SidewaysOffset.Value = 0.123f;
-                    _UpDownOffset.Value = 0.043f;
-                }
-                else
-                {
-                    isEnablingViaUpdate = true;
-                    isInActiveAim = false;
-                    _SidewaysOffset.Value = currentOffset["X"];
-                    _UpDownOffset.Value = currentOffset["Y"];
-                }
+                isInActiveAim = true;
+                _UpDownOffset.Value = 0.06f;
+                _SidewaysOffset.Value = 0.123f;
+                return;
+            }
+            else
+            {
+                isInActiveAim = false;
+                _UpDownOffset.Value = currentOffset["Y"];
+                _SidewaysOffset.Value = currentOffset["Z"];
+                return;
             }
         }
     }
@@ -285,9 +256,16 @@ public class Plugin : BaseUnityPlugin
                 {
                     if (selected == PresetManager.LoadedPresets[i].Name)
                     {
+                        currentOffset.Clear();
+
                         _ForwardBackwardOffset.Value = PresetManager.LoadedPresets[i].X;
                         _UpDownOffset.Value = PresetManager.LoadedPresets[i].Y;
                         _SidewaysOffset.Value = PresetManager.LoadedPresets[i].Z;
+
+                        currentOffset.Clear();
+                        currentOffset["Y"] = PresetManager.LoadedPresets[i].Y;
+                        currentOffset["Z"] = PresetManager.LoadedPresets[i].Z;
+                        loadedPreset = selected;
                     }
                 }
             }

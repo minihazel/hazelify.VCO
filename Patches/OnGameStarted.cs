@@ -1,5 +1,7 @@
 ﻿using EFT;
+using EFT.UI;
 using HarmonyLib;
+using hazelify.VCO.PresetInfo;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
@@ -16,6 +18,7 @@ namespace hazelify.VCO.Patches
         private static void PatchPostfix(ref GameWorld __instance)
         {
             Plugin.hasStartedGame = true;
+            Plugin.OnOptionToggled(null, null);
         }
     }
 }

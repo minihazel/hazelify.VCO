@@ -1,4 +1,5 @@
 ﻿using EFT;
+using EFT.UI;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
@@ -16,6 +17,9 @@ namespace hazelify.VCO.Patches
         private static void PatchPostfix(ref GameWorld __instance)
         {
             Plugin.hasStartedGame = false;
+
+            Plugin.currentOffset.Clear();
+            ConsoleScreen.Log("OnDestroy = false");
         }
     }
 }
