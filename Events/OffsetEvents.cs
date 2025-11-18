@@ -20,6 +20,9 @@ namespace hazelify.VCO.Events
         public static ConfigEntry<float> _ForwardBackwardOffset;
         public static ConfigEntry<float> _UpDownOffset;
         public static ConfigEntry<float> _SidewaysOffset;
+        public static ConfigEntry<KeyboardShortcut> _ActiveAimShortcut;
+        public static ConfigEntry<bool> _EnableActiveAim;
+        public static bool isInActiveAim;
 
         public static string currentEnv = Environment.CurrentDirectory;
         public static List<string> weapons = new List<string>();
@@ -30,7 +33,10 @@ namespace hazelify.VCO.Events
             ConfigEntry<float> UpDownOffset,
             ConfigEntry<float> SidewaysOffset,
             ConfigEntry<bool> OffsetStates,
-            ConfigEntry<bool> ToggleAutomaticWeaponDetection)
+            ConfigEntry<bool> ToggleAutomaticWeaponDetection,
+            ConfigEntry<KeyboardShortcut> ActiveAimShortcut,
+            ConfigEntry<bool> EnableActiveAim,
+            bool IsInActiveAim)
         {
             _PresetSelection = PresetSelection;
             _PresetSelection.SettingChanged += Plugin.OnOptionToggled;
@@ -46,6 +52,13 @@ namespace hazelify.VCO.Events
 
             _toggleAutomaticWeaponDetection = ToggleAutomaticWeaponDetection;
             _toggleAutomaticWeaponDetection.SettingChanged += Plugin.OnAutomaticOptionToggled;
+
+            _ActiveAimShortcut = ActiveAimShortcut;
+            _ActiveAimShortcut.SettingChanged += OffsetSettingChanged;
+
+            _EnableActiveAim = EnableActiveAim;
+
+            isInActiveAim = IsInActiveAim;
 
             _OffsetStates = OffsetStates;
             _OffsetStates.SettingChanged += OffsetSettingChanged;
@@ -63,8 +76,8 @@ namespace hazelify.VCO.Events
 
             /*
             Vector3
-            Parameter 1: Left, right
-            Parameter 2: Up, down
+            Parameter 1: Left, right (currentOffset["Z"])
+            Parameter 2: Up, down (currentOffset["Y"])
             Parameter 3: Forward, backward
             */
 
@@ -79,17 +92,29 @@ namespace hazelify.VCO.Events
                             if (gameWorld.MainPlayer.ProceduralWeaponAnimation.HandsContainer.CameraOffset != null)
                             {
                                 var __instance = gameWorld.MainPlayer.ProceduralWeaponAnimation;
+                                Vector3 newOffsets;
 
                                 if (_OffsetStates.Value)
                                 {
-                                    Vector3 newOffsets = new Vector3(_SidewaysOffset.Value, _UpDownOffset.Value, _ForwardBackwardOffset.Value);
+                                    newOffsets = new Vector3(_SidewaysOffset.Value, _UpDownOffset.Value, _ForwardBackwardOffset.Value);
                                     __instance.HandsContainer.CameraOffset = newOffsets;
                                 }
                                 else
                                 {
-                                    Vector3 newOffsets = new Vector3(0.04f, 0.04f, 0.04f);
-                                    __instance.HandsContainer.CameraOffset = newOffsets;
+                                    newOffsets = new Vector3(0.04f, 0.04f, 0.04f);
                                 }
+
+                                if (_EnableActiveAim.Value && isInActiveAim)
+                                {
+                                    // Active Aim is ON: OVERRIDE the Y and Z values with the saved currentOffset
+                                    // NOTE: Forward/Backward offset (X) usually remains the same, using _ForwardBackwardOffset.Value.
+
+                                    // We overwrite only the Y (Up/Down) and Z (Sideways) components
+                                    newOffsets.y = Plugin.currentOffset["Y"]; // Y (Up/Down)
+                                    newOffsets.z = Plugin.currentOffset["Z"]; // Z (Sideways)
+                                }
+
+                                __instance.HandsContainer.CameraOffset = newOffsets;
                             }
                         }
                     }

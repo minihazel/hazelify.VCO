@@ -70,6 +70,6 @@
   </ItemGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /y /f &quot;$(TargetPath)&quot; &quot;$(ProjectDir)Build\BepInEx\plugins\hazelify.VCO\&quot;" />
+    <Exec Command="xcopy /y /f &quot;$(TargetPath)&quot; &quot;D:\SPT Iterations\4.0.0\BepInEx\plugins\hazelify.VCO\&quot;" />
   </Target>
 </Project>

@@ -18,7 +18,10 @@ namespace hazelify.VCO.Patches
         private static void PatchPostfix(ref GameWorld __instance)
         {
             Plugin.hasStartedGame = true;
-            Plugin.OnOptionToggled(null, null);
+
+            Plugin.currentOffset.Clear();
+            Plugin.currentOffset["Y"] = Plugin._UpDownOffset.Value;
+            Plugin.currentOffset["Z"] = Plugin._SidewaysOffset.Value;
         }
     }
 }

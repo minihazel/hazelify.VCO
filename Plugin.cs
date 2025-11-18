@@ -23,20 +23,32 @@ public class Plugin : BaseUnityPlugin
 {
     // personal build event path: "..\..\..\BepInEx\plugins\hazelify.VCO\"
 
-    public string currentEnv = Environment.CurrentDirectory; // main SPT dir
-    public static string weaponsPath = null;
-    public static string presetsPath = null;
-    public static List<string> weaponsList = new List<string>();
-    public static List<string> presetsList = new List<string>();
-    public static string currentWeapon = null;
-    public static string loadedPreset = null;
-    public static bool isEnablingViaUpdate = false;
-    public static bool isInActiveAim = false;
-    public static bool hasStartedGame = false;
-    public static Dictionary<string, float> currentOffset = new Dictionary<string, float>();
+    // critical vars
+    public string currentEnv = Environment.CurrentDirectory;
     public static new ManualLogSource Logger;
 
+    // lists & dicts
+    public static List<string> weaponsList = new List<string>();
+    public static List<string> presetsList = new List<string>();
+    public static Dictionary<string, float> currentOffset = new Dictionary<string, float>();
+
+    // strings
+    public static string weaponsPath = null;
+    public static string presetsPath = null;
+    public static string currentWeapon = null;
+
+    // strings (categories) in order
     private const string Settings = "Settings";
+    private const string Offsets = "Offsets";
+    private const string Export = "Export";
+    private const string FieldofView = "Field of View";
+    private const string DoNotModify = "(Do not modify)";
+
+    // static bools
+    public static bool isInActiveAim = false;
+    public static bool hasStartedGame = false;
+
+    // ConfigEntries
     public static ConfigEntry<bool> _notice;
     public static ConfigEntry<string> PresetSelection { get; private set; }
     public static ConfigEntry<bool> _DeletePreset;
@@ -45,7 +57,6 @@ public class Plugin : BaseUnityPlugin
     public static ConfigEntry<bool> _refreshWeaponsList;
     public static ConfigEntry<bool> _refreshPresetsList;
 
-    private const string Offsets = "Offsets";
     public static ConfigEntry<float> _ForwardBackwardOffset;
     public static ConfigEntry<float> _UpDownOffset;
     public static ConfigEntry<float> _SidewaysOffset;
@@ -53,14 +64,11 @@ public class Plugin : BaseUnityPlugin
     public static ConfigEntry<bool> _EnableActiveAim;
     public static ConfigEntry<KeyboardShortcut> _ActiveAimShortcut;
 
-    private const string Export = "Export";
     public static ConfigEntry<string> _PresetName;
     public static ConfigEntry<bool> _ExportPreset;
 
-    private const string FieldofView = "Field of View";
     public static ConfigEntry<bool> _fovtoggle;
 
-    private const string DoNotModify = "(Do not modify)";
     public static ConfigEntry<int> minRange;
     public static ConfigEntry<int> maxRange;
     public static ConfigEntry<bool> _placeholder;
@@ -78,9 +86,9 @@ public class Plugin : BaseUnityPlugin
 
         weaponsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "weapons.cfg");
         presetsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "presets.json");
+
         checkPaths();
         initPresets();
-
         readFromWeaponsList();
 
         // Settings.Bind(Config);
@@ -190,7 +198,7 @@ public class Plugin : BaseUnityPlugin
         _toggleAutomaticWeaponDetection = Config.Bind(
             Settings,
             "Toggle automatic weapon detection",
-            true,
+            false,
             new ConfigDescription("Choose if the mod should only do its magic when the equipped weapon is recognized by the mod database.",
                 null,
                 new ConfigurationManagerAttributes { Order = 1 }));
@@ -198,7 +206,7 @@ public class Plugin : BaseUnityPlugin
 
 
         // init events
-        OffsetEvents.Initialize(PresetSelection, _ForwardBackwardOffset, _UpDownOffset, _SidewaysOffset, _OffsetStates, _toggleAutomaticWeaponDetection);
+        OffsetEvents.Initialize(PresetSelection, _ForwardBackwardOffset, _UpDownOffset, _SidewaysOffset, _OffsetStates, _toggleAutomaticWeaponDetection, _ActiveAimShortcut, _EnableActiveAim, isInActiveAim);
         SetItemInHandsPatch.Initialize(_OffsetStates, _toggleAutomaticWeaponDetection, _ForwardBackwardOffset, _UpDownOffset, _SidewaysOffset);
 
         _refreshPresetsList.SettingChanged += onRefreshPresetsList;
@@ -211,24 +219,19 @@ public class Plugin : BaseUnityPlugin
 
     public void Update()
     {
-        if (hasStartedGame)
+        if (_EnableActiveAim.Value && IsKeyPressed(_ActiveAimShortcut.Value))
         {
-            if (_EnableActiveAim.Value && IsKeyPressed(_ActiveAimShortcut.Value))
+            isInActiveAim = !isInActiveAim;
+
+            if (isInActiveAim)
             {
-                if (!isInActiveAim)
-                {
-                    isInActiveAim = true;
-                    _UpDownOffset.Value = 0.06f;
-                    _SidewaysOffset.Value = 0.123f;
-                    return;
-                }
-                else
-                {
-                    isInActiveAim = false;
-                    _UpDownOffset.Value = currentOffset["Y"];
-                    _SidewaysOffset.Value = currentOffset["Z"];
-                    return;
-                }
+                _UpDownOffset.Value = 0.06f;
+                _SidewaysOffset.Value = 0.123f;
+            }
+            else
+            {
+                _UpDownOffset.Value = currentOffset["Y"];
+                _SidewaysOffset.Value = currentOffset["Z"];
             }
         }
     }
@@ -259,8 +262,6 @@ public class Plugin : BaseUnityPlugin
                 {
                     if (selected == PresetManager.LoadedPresets[i].Name)
                     {
-                        currentOffset.Clear();
-
                         _ForwardBackwardOffset.Value = PresetManager.LoadedPresets[i].X;
                         _UpDownOffset.Value = PresetManager.LoadedPresets[i].Y;
                         _SidewaysOffset.Value = PresetManager.LoadedPresets[i].Z;
@@ -268,7 +269,6 @@ public class Plugin : BaseUnityPlugin
                         currentOffset.Clear();
                         currentOffset["Y"] = PresetManager.LoadedPresets[i].Y;
                         currentOffset["Z"] = PresetManager.LoadedPresets[i].Z;
-                        loadedPreset = selected;
                     }
                 }
             }
@@ -446,7 +446,7 @@ public class Plugin : BaseUnityPlugin
         }
     }
 
-    bool IsKeyPressed(KeyboardShortcut key)
+    public static bool IsKeyPressed(KeyboardShortcut key)
     {
         if (!Input.GetKeyDown(key.MainKey))
         {
