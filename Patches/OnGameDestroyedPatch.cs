@@ -19,7 +19,6 @@ namespace hazelify.VCO.Patches
             Plugin.hasStartedGame = false;
 
             Plugin.currentOffset.Clear();
-            ConsoleScreen.Log("OnDestroy = false");
         }
     }
 }

@@ -17,7 +17,7 @@ using EFT.Interactive;
 
 namespace hazelify.VCO;
 
-[BepInPlugin("hazelify.vco", "Viewmodel Camera Offset", "1.1.0")]
+[BepInPlugin("hazelify.vco", "Viewmodel Camera Offset", "1.1.1")]
 // [BepInDependency("com.samswat.fov", BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BaseUnityPlugin
 {
@@ -211,21 +211,24 @@ public class Plugin : BaseUnityPlugin
 
     public void Update()
     {
-        if (_EnableActiveAim.Value && IsKeyPressed(_ActiveAimShortcut.Value))
+        if (hasStartedGame)
         {
-            if (!isInActiveAim)
+            if (_EnableActiveAim.Value && IsKeyPressed(_ActiveAimShortcut.Value))
             {
-                isInActiveAim = true;
-                _UpDownOffset.Value = 0.06f;
-                _SidewaysOffset.Value = 0.123f;
-                return;
-            }
-            else
-            {
-                isInActiveAim = false;
-                _UpDownOffset.Value = currentOffset["Y"];
-                _SidewaysOffset.Value = currentOffset["Z"];
-                return;
+                if (!isInActiveAim)
+                {
+                    isInActiveAim = true;
+                    _UpDownOffset.Value = 0.06f;
+                    _SidewaysOffset.Value = 0.123f;
+                    return;
+                }
+                else
+                {
+                    isInActiveAim = false;
+                    _UpDownOffset.Value = currentOffset["Y"];
+                    _SidewaysOffset.Value = currentOffset["Z"];
+                    return;
+                }
             }
         }
     }
