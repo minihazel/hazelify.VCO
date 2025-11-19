@@ -17,7 +17,7 @@ using EFT.Interactive;
 
 namespace hazelify.VCO;
 
-[BepInPlugin("hazelify.vco", "Viewmodel Camera Offset", "1.1.2")]
+[BepInPlugin("hazelify.vco", "Viewmodel Camera Offset", "1.1.3")]
 // [BepInDependency("com.samswat.fov", BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BaseUnityPlugin
 {
@@ -40,6 +40,7 @@ public class Plugin : BaseUnityPlugin
     // strings (categories) in order
     private const string Settings = "Settings";
     private const string Offsets = "Offsets";
+    private const string ActiveAim = "Active Aim";
     private const string Export = "Export";
     private const string FieldofView = "Field of View";
     private const string DoNotModify = "(Do not modify)";
@@ -62,6 +63,7 @@ public class Plugin : BaseUnityPlugin
     public static ConfigEntry<float> _SidewaysOffset;
 
     public static ConfigEntry<bool> _EnableActiveAim;
+    public static ConfigEntry<bool> _ActiveAimToggleMode;
     public static ConfigEntry<KeyboardShortcut> _ActiveAimShortcut;
 
     public static ConfigEntry<string> _PresetName;
@@ -140,21 +142,31 @@ public class Plugin : BaseUnityPlugin
             new AcceptableValueRange<float>(-0.5f, 0.5f),
             new ConfigurationManagerAttributes { Order = 7 }));
 
+
+
         _EnableActiveAim = Config.Bind(
-            Offsets,
+            ActiveAim,
             "Enable Active Aim",
             false,
             new ConfigDescription("Allows for using (discount) Active Aim via hotkey.",
             null,
             new ConfigurationManagerAttributes { Order = 6 }));
 
+        _ActiveAimToggleMode = Config.Bind(
+            ActiveAim,
+            "Active Aim Hotkey Mode",
+            false,
+            new ConfigDescription("Should Active Aim be used as toggle or hold?\n\nEnabled = Toggle\nDisabled = Hold",
+            null,
+            new ConfigurationManagerAttributes { Order = 5 }));
+
         _ActiveAimShortcut = Config.Bind(
-            Offsets,
-            "Active Aim Hotkey",
+            ActiveAim,
+            "Active Aim Key",
             new KeyboardShortcut(KeyCode.Z),
             new ConfigDescription("Set what hotkey to toggle Active Aim with",
             null,
-            new ConfigurationManagerAttributes { Order = 5 }));
+            new ConfigurationManagerAttributes { Order = 4 }));
 
 
 
@@ -219,19 +231,45 @@ public class Plugin : BaseUnityPlugin
 
     public void Update()
     {
-        if (_EnableActiveAim.Value && IsKeyPressed(_ActiveAimShortcut.Value))
-        {
-            isInActiveAim = !isInActiveAim;
+        if (!_EnableActiveAim.Value) return;
 
-            if (isInActiveAim)
+        if (_ActiveAimToggleMode.Value)
+        {
+            if (IsKeyPressed(_ActiveAimShortcut.Value))
             {
-                _UpDownOffset.Value = 0.06f;
-                _SidewaysOffset.Value = 0.123f;
+                isInActiveAim = !isInActiveAim;
+
+                if (isInActiveAim)
+                {
+                    _UpDownOffset.Value = 0.06f;
+                    _SidewaysOffset.Value = 0.123f;
+                }
+                else
+                {
+                    _UpDownOffset.Value = currentOffset["Y"];
+                    _SidewaysOffset.Value = currentOffset["Z"];
+                }
+            }
+        }
+        else
+        {
+            if (IsKeyDown(_ActiveAimShortcut.Value))
+            {
+                if (!isInActiveAim)
+                {
+                    isInActiveAim = true;
+                    _UpDownOffset.Value = 0.06f;
+                    _SidewaysOffset.Value = 0.123f;
+                }
             }
             else
             {
-                _UpDownOffset.Value = currentOffset["Y"];
-                _SidewaysOffset.Value = currentOffset["Z"];
+                if (isInActiveAim)
+                {
+                    isInActiveAim = false;
+                    _UpDownOffset.Value = currentOffset["Y"];
+                    _SidewaysOffset.Value = currentOffset["Z"];
+                }
             }
         }
     }
@@ -449,6 +487,24 @@ public class Plugin : BaseUnityPlugin
     public static bool IsKeyPressed(KeyboardShortcut key)
     {
         if (!Input.GetKeyDown(key.MainKey))
+        {
+            return false;
+        }
+
+        foreach (var modifier in key.Modifiers)
+        {
+            if (!Input.GetKey(modifier))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static bool IsKeyDown(KeyboardShortcut key)
+    {
+        if (!Input.GetKey(key.MainKey))
         {
             return false;
         }

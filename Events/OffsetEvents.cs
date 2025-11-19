@@ -106,12 +106,8 @@ namespace hazelify.VCO.Events
 
                                 if (_EnableActiveAim.Value && isInActiveAim)
                                 {
-                                    // Active Aim is ON: OVERRIDE the Y and Z values with the saved currentOffset
-                                    // NOTE: Forward/Backward offset (X) usually remains the same, using _ForwardBackwardOffset.Value.
-
-                                    // We overwrite only the Y (Up/Down) and Z (Sideways) components
-                                    newOffsets.y = Plugin.currentOffset["Y"]; // Y (Up/Down)
-                                    newOffsets.z = Plugin.currentOffset["Z"]; // Z (Sideways)
+                                    newOffsets.y = Plugin.currentOffset["Y"]; // Y up down
+                                    newOffsets.z = Plugin.currentOffset["Z"]; // Z sideways
                                 }
 
                                 __instance.HandsContainer.CameraOffset = newOffsets;
