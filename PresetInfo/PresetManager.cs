@@ -20,6 +20,7 @@ namespace hazelify.VCO.PresetInfo
             if (File.Exists(_filePath))
             {
                 var presetData = PresetLoader.LoadPresets(filePath);
+                LoadedPresets.Clear();
                 LoadedPresets.AddRange(presetData.Presets);
             }
         }

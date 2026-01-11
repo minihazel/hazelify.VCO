@@ -276,6 +276,7 @@ public class Plugin : BaseUnityPlugin
 
     public static string[] initPresets()
     {
+        presetsList.Clear();
         PresetManager.Initialize(presetsPath);
         if (PresetManager.LoadedPresets.Count == 0)
         {
@@ -283,18 +284,20 @@ public class Plugin : BaseUnityPlugin
         }
 
         presetsList.AddRange(PresetManager.LoadedPresets.Select(p => p.Name));
-        string defaultValue = presetsList.Count > 0 ? presetsList[0] : "Default";
         return presetsList.ToArray();
     }
 
     public static void OnOptionToggled(object sender, EventArgs e)
     {
+        ConsoleScreen.Log(PresetSelection.ToString());
+        ConsoleScreen.Log(PresetSelection.Value.ToString());
+
         if (PresetSelection != null)
         {
             if (PresetSelection.Value != null)
             {
                 string selected = PresetSelection.Value;
-                ConsoleScreen.Log("[VCO] Applying preset: " + selected);
+                NotificationManagerClass.DisplaySingletonNotification("[VCO] Applied preset: " + selected);
 
                 for (int i = 0; i < PresetManager.LoadedPresets.Count; i++)
                 {
@@ -357,33 +360,32 @@ public class Plugin : BaseUnityPlugin
     {
         if (_refreshPresetsList == null) return;
         rebindPresets();
+        PresetSelection.SettingChanged += OnOptionToggled;
         _refreshPresetsList.Value = false;
     }
 
     public void rebindPresets()
     {
-        string[] presetOptions = initPresets() ?? new[] { "Default" };
-        string currentValue = PresetSelection.Value ?? presetOptions[0];
-        if (!presetOptions.Contains(currentValue))
-        {
-            currentValue = presetOptions[0];
-        }
+        string[] presetOptionsString = initPresets() ?? new[] { "Default" };
+        List<string> presetOptions = new List<string>(presetOptionsString);
+        string currentValue = presetOptions[0];
+
+        presetsList = presetOptions;
 
         if (PresetSelection != null)
         {
             Config.Remove(PresetSelection.Definition);
         }
 
+        Logger.LogError("[VCO] Rebinding presets: " + string.Join(Environment.NewLine, presetOptions));
+
         PresetSelection = Config.Bind(
-            "Presets",
-            "Selected Preset",
+            Settings,
+            "Select Preset",
             currentValue,
-            new ConfigDescription(
-                "Choose a preset",
-                new AcceptableValueList<string>(presetOptions),
-                new ConfigurationManagerAttributes { IsAdvanced = true }
-            )
-        );
+            new ConfigDescription("Choose a preset to use for viewmodel offsets.",
+            new AcceptableValueList<string>(presetsList.ToArray()),
+            new ConfigurationManagerAttributes { Order = 6 }));
     }
 
     public static void PresetDeleted(object sender, EventArgs e)
