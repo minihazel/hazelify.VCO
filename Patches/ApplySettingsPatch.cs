@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using hazelify.VCO;
+using EFT.Settings.Game;
 
 namespace hazelify.VCO.Patches
 {
@@ -15,7 +16,7 @@ namespace hazelify.VCO.Patches
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(GClass1085.Class1841), nameof(GClass1085.Class1841.method_0));
+            return AccessTools.Method(typeof(GameSettingsGroup.CG_Ctor), nameof(GameSettingsGroup.CG_Ctor.method_0));
         }
 
         [PatchPostfix]

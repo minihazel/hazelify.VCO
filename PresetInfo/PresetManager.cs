@@ -50,6 +50,12 @@ namespace hazelify.VCO.PresetInfo
 
         private static void SavePresets()
         {
+            if (string.IsNullOrEmpty(_filePath))
+            {
+                Plugin.Logger.LogError("[VCO ERROR] Cannot save presets: _filePath is null or empty!");
+                return;
+            }
+
             var presetData = new PresetData { Presets = LoadedPresets };
             string json = JsonConvert.SerializeObject(presetData, Formatting.Indented);
             File.WriteAllText(_filePath, json);

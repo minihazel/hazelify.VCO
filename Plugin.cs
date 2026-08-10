@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using hazelify.VCO.PresetInfo;
 using EFT.UI;
+using EFT.Communications;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
@@ -89,9 +90,9 @@ public class Plugin : BaseUnityPlugin
         weaponsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "weapons.cfg");
         presetsPath = Path.Combine(currentEnv, "BepInEx", "plugins", "hazelify.VCO", "presets.json");
 
-        checkPaths();
         initPresets();
         readFromWeaponsList();
+        checkPaths();
 
         // Settings.Bind(Config);
         minRange = Config.Bind(
@@ -297,7 +298,7 @@ public class Plugin : BaseUnityPlugin
             if (PresetSelection.Value != null)
             {
                 string selected = PresetSelection.Value;
-                NotificationManagerClass.DisplaySingletonNotification("[VCO] Applied preset: " + selected);
+                NotificationManager.DisplaySingletonNotification("[VCO] Applied preset: " + selected);
 
                 for (int i = 0; i < PresetManager.LoadedPresets.Count; i++)
                 {
@@ -432,20 +433,19 @@ public class Plugin : BaseUnityPlugin
 
     private static void checkPaths()
     {
-        bool doesPresetsPathExist = File.Exists(presetsPath);
-        if (!doesPresetsPathExist)
+        if (!File.Exists(presetsPath))
         {
-            File.Create(presetsPath);
+            // Add default preset (which triggers SavePresets)
+            // File.WriteAllText in SavePresets will create the file safely
             PresetManager.AddPreset("Default", 0.05f, 0.06f, -0.01f);
+            PresetManager.AddPreset("CSGO", 0.04f, 0.065f, -0.02f);
         }
-        return;
     }
 
     private static void generateWeaponsList(string path)
     {
         try
         {
-            File.CreateText(path);
             string[] allWeapons = {
                     "HK MP7A1 4.6x30 submachine gun",
                     "HK MP7A2 4.6x30 submachine gun",
@@ -466,23 +466,14 @@ public class Plugin : BaseUnityPlugin
 
     private static void readFromWeaponsList()
     {
-        if (!File.Exists(weaponsPath))
+        if (!File.Exists(weaponsPath) || string.IsNullOrWhiteSpace(File.ReadAllText(weaponsPath)))
         {
             generateWeaponsList(weaponsPath);
-            readFromWeaponsList();
         }
-        else
+
+        if (File.Exists(weaponsPath))
         {
-            if (string.IsNullOrWhiteSpace(File.ReadAllText(weaponsPath)))
-            {
-                File.Delete(weaponsPath);
-                generateWeaponsList(weaponsPath);
-                readFromWeaponsList();
-            }
-            else
-            {
-                weaponsList.AddRange(File.ReadAllLines(weaponsPath));
-            }
+            weaponsList.AddRange(File.ReadAllLines(weaponsPath));
         }
     }
 

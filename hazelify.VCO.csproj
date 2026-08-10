@@ -35,7 +35,7 @@
       <HintPath>D:\SPT Iterations\Assemblies 4.0\Core\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>D:\SPT Iterations\Assemblies 4.0\Assembly-CSharp.dll</HintPath>
+      <HintPath>D:\SPT Iterations\Assemblies 4.1.2\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx">
       <HintPath>D:\SPT Iterations\Assemblies 4.0\Core\BepInEx.dll</HintPath>
@@ -44,19 +44,19 @@
       <HintPath>D:\SPT Iterations\Assemblies 4.0\Comfort.dll</HintPath>
     </Reference>
     <Reference Include="Comfort.Unity">
-      <HintPath>D:\SPT Iterations\Assemblies 4.0\Comfort.Unity.dll</HintPath>
+      <HintPath>D:\SPT Iterations\Assemblies 4.1.2\Comfort.Unity.dll</HintPath>
     </Reference>
     <Reference Include="ConfigurationManager">
       <HintPath>References\ConfigurationManager.dll</HintPath>
     </Reference>
     <Reference Include="netstandard">
-      <HintPath>References\netstandard.dll</HintPath>
+      <HintPath>D:\SPT Iterations\Assemblies 4.1.2\netstandard.dll</HintPath>
     </Reference>
     <Reference Include="Sirenix.Serialization">
-      <HintPath>D:\SPT Iterations\Assemblies 4.0\Sirenix.Serialization.dll</HintPath>
+      <HintPath>D:\SPT Iterations\Assemblies 4.1.2\Sirenix.Serialization.dll</HintPath>
     </Reference>
     <Reference Include="spt-reflection">
-      <HintPath>D:\SPT Iterations\Assemblies 4.0\Core\spt-reflection.dll</HintPath>
+      <HintPath>D:\SPT Iterations\Assemblies 4.1.2\spt\spt-reflection.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>D:\SPT Iterations\Assemblies 4.0\UnityEngine.dll</HintPath>
@@ -65,7 +65,7 @@
       <HintPath>D:\SPT Iterations\Assemblies 4.0\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>D:\SPT Iterations\Assemblies 4.0\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath>D:\SPT Iterations\Assemblies 4.1.2\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   
